@@ -1,4 +1,3 @@
-import functools
 import logging
 import re
 import os
@@ -17,11 +16,10 @@ class TwilioReceiver:
         self.admin_numbers = [x.encode('utf8') for x in os.environ['ADMIN_NUMBERS'].split(',')]
         self.logger = logger
         self.event = {}
-        self.twilio_signature = None
+        self.twilio_signature = ''
         self.parse_event(twilio_lambda_event)
         self.validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
 
-    @functools.lru_cache()
     def message(self):
         return self.event.get(u'Body', '')
 
@@ -48,7 +46,7 @@ class TwilioReceiver:
             }
         except KeyError as key_error:
             self.logger.debug(f'Twilio event is missing key: {key_error}')
-            self.twilio_signature = None
+            self.twilio_signature = ''
             self.event = {}
 
     def valid_request(self):
@@ -65,7 +63,7 @@ class TwilioReceiver:
         return self.valid_request() and self.requester_is_an_admin()
 
     def send_sms(self, phone_number, message):
-        message = self.client.messages.create(
+        twilio_message = self.client.messages.create(
                 body=message,
                 from_=self.twilio_number,
                 to=phone_number
