@@ -17,6 +17,7 @@ class TwilioReceiver:
         self.admin_numbers = [x.encode('utf8') for x in os.environ['ADMIN_NUMBERS'].split(',')]
         self.logger = logger
         self.event = {}
+        self.twilio_signature = None
         self.parse_event(twilio_lambda_event)
         self.validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
 
@@ -45,8 +46,10 @@ class TwilioReceiver:
             self.event = {
                 k: urllib.parse.unquote_plus(v) for k, v in event.items() if k != u'twilioSignature'
             }
-        except KeyError:
-            return {}
+        except KeyError as key_error:
+            self.logger.debug(f'Twilio event is missing key: {key_error}')
+            self.twilio_signature = None
+            self.event = {}
 
     def valid_request(self):
         return self.validator.validate(
