@@ -40,7 +40,7 @@ def lambda_handler(event, context):
 
         if incoming_twilio.message() == 'status':
             if ec2_manager.instance_status() == 'running':
-                twilio_response.message('Minecraft server online: %s on port %d:' % (minecraft_host, minecraft_port))
+                twilio_response.message('Minecraft server online: %s on port %d:' % (minecraft_host, int(minecraft_port)))
             else:
                 twilio_response.message('Server instance is not running. Text "startup" to get it running.')
         elif incoming_twilio.message() == 'startup':
