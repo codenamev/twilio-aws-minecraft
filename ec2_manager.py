@@ -60,8 +60,8 @@ class Ec2Manager:
     def ingress_permissions_for_ip(self, ip, port, description):
         return [
                 {
-                    'FromPort': port,
-                    'ToPort': port,
+                    'FromPort': int(port),
+                    'ToPort': int(port),
                     'IpProtocol': 'TCP',
                     'IpRanges': [
                         {
@@ -71,8 +71,8 @@ class Ec2Manager:
                     ],
                 },
                 {
-                    'FromPort': port,
-                    'ToPort': port,
+                    'FromPort': int(port),
+                    'ToPort': int(port),
                     'IpProtocol': 'UDP',
                     'IpRanges': [
                         {

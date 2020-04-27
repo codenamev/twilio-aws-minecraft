@@ -85,8 +85,8 @@ class Ec2ManagerTestCase(unittest.TestCase):
         self.assertEqual(self.subject.ingress_permissions_for_ip(ip, port, description),
                 [
                     {
-                        'FromPort': port,
-                        'ToPort': port,
+                        'FromPort': int(port),
+                        'ToPort': int(port),
                         'IpProtocol': 'TCP',
                         'IpRanges': [
                             {
@@ -96,8 +96,8 @@ class Ec2ManagerTestCase(unittest.TestCase):
                         ],
                     },
                     {
-                        'FromPort': port,
-                        'ToPort': port,
+                        'FromPort': int(port),
+                        'ToPort': int(port),
                         'IpProtocol': 'UDP',
                         'IpRanges': [
                             {
