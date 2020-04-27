@@ -15,7 +15,6 @@ from twilio_receiver import TwilioReceiver
 import urllib
 
 from ec2_manager import Ec2Manager
-from minestat import MineStat
 
 def lambda_handler(event, context):
     resp = MessagingResponse()
@@ -41,33 +40,17 @@ def lambda_handler(event, context):
 
         if incoming_twilio.message() == 'status':
             if ec2_manager.instance_status() == 'running':
-                if len(ec2_manager.get_host_ip()) > 0:
-                    ec2_manager.add_ip_to_whitelist(
-                            ec2_manager.get_host_ip(),
-                            'Lambda (status)'
-                            )
-                    ms = MineStat(minecraft_host, minecraft_port)
-                    twilio_response.message('Minecraft server status of %s on port %d:' % (ms.address, ms.port))
-                    if ms.online:
-                        twilio_response.message("""Server is online running version %s with %s out of %s players.
-                        Message of the day: %s
-                        Latency: %sms""" % (ms.version, ms.current_players, ms.max_players, ms.motd, ms.latency)
-                        )
-                    else:
-                        twilio_response.message('Server is offline!')
-
-                else:
-                    twilio_response.message('Unable to check the Minecraft Server at this time.')
+                twilio_response.message('Minecraft server online: %s on port %d:' % (minecraft_host, minecraft_port))
             else:
                 twilio_response.message('Server instance is not running. Text "startup" to get it running.')
         elif incoming_twilio.message() == 'startup':
-            twilio_receiver.send_sms(incoming_twilio.sender(), 'Starting Minecraft server...')
+            incoming_twilio.send_sms(incoming_twilio.sender(), 'Starting Minecraft server...')
             if ec2_manager.start_instance():
                 twilio_response.message(f'Minecraft server started at {minecraft_host}. Give it a minute to warm up :-)')
             else:
                 twilio_response.message("Unable to start the server at this time.")
         elif incoming_twilio.message() == 'shutdown':
-            ec2_manager.send_sms(incoming_twilio.sender(), 'Stopping Minecraft server...')
+            incoming_twilio.send_sms(incoming_twilio.sender(), 'Stopping Minecraft server...')
             if ec2_manager.stop_instance():
                 twilio_response.message('Minecraft server shutting down.')
             else:
