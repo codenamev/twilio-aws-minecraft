@@ -23,6 +23,7 @@ With the above in place, you should have a working Minecraft Server running in E
 Make sure to add the following environment variables to your Lambda function:
 
 | Key                   | Description                                                                                                                                                                    |
+| --------------------- | ---------------- |
 | ADMIN_NUMBERS         | A comma delimited list of administrator phone numbers (e.g. `+12125552368,+12125551234`)                                                                                       |
 | TWILIO_ACCOUNT_SID    | Your primary Twilio account identifier - find this [in the Console](https://www.twilio.com/console).                                                                           |
 | TWILIO_AUTH_TOKEN     | Used to authenticate - [just like the above, you'll find this here](https://www.twilio.com/console).                                                                           |
@@ -39,6 +40,7 @@ Make sure to add the following environment variables to your Lambda function:
 You will have to add the following actions to the permissions for your Lambda function:
 
 | Action                              | Description                                             |
+| ----------------------------------- | ------------------------------------------------------- |
 | `ec2:AuthorizeSecurityGroupIngress` | Allows adding new IPs to the server whitelist           |
 | `ec2:DescribeInstanceStatus`        | Allows checking the status of the instance              |
 | `ec2:DescribeSecurityGroups`        | Allows looking for existing IPs in the server whitelist |
