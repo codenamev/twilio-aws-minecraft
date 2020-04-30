@@ -63,7 +63,7 @@ def lambda_handler(event, context):
                 twilio_response.message(f'Added {incoming_twilio.ip()} to whitelist as "{incoming_twilio.ip_description()}"')
             else:
                 twilio_response.message("usage: whitelist add 123.456.78.9 as person's home")
-        elif incoming_twilio.message.startswith('whitelist remove '):
+        elif incoming_twilio.message().startswith('whitelist remove '):
             if len(incoming_twilio.ip()) > 0:
                 ec2_manager.remove_ip_from_whitelist(incoming_twilio.ip(),
                         minecraft_port,
