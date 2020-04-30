@@ -45,7 +45,7 @@ class TwilioReceiver:
                 k: urllib.parse.unquote_plus(v) for k, v in event.items() if k != u'twilioSignature'
             }
         except KeyError as key_error:
-            self.logger.debug(f'Twilio event is missing key: {key_error}')
+            self.logger.error(f'Twilio event is missing key: {key_error}')
             self.twilio_signature = ''
             self.event = {}
 

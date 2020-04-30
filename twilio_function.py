@@ -19,9 +19,9 @@ from ec2_manager import Ec2Manager
 def lambda_handler(event, context):
     resp = MessagingResponse()
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.INFO)
     handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(logging.INFO)
     root_logger.addHandler(handler)
 
     incoming_twilio = TwilioReceiver(event, root_logger)
@@ -29,6 +29,7 @@ def lambda_handler(event, context):
 
     print("Received event: " + str(event))
     print(f'Form params: {incoming_twilio.event}')
+    print(f'Incoming SMS: {incoming_twilio.message()}')
 
     if not incoming_twilio.validate():
         twilio_response.message("I'm sorry, but I can't help you.")
@@ -38,24 +39,24 @@ def lambda_handler(event, context):
         minecraft_host = os.environ['MINECRAFT_HOST']
         minecraft_port = os.environ['MINECRAFT_PORT']
 
-        if incoming_twilio.message() == 'status':
+        if incoming_twilio.message().lower() == 'status':
             if ec2_manager.instance_status() == 'running':
                 twilio_response.message('Minecraft server online: %s on port %d:' % (minecraft_host, int(minecraft_port)))
             else:
                 twilio_response.message('Server instance is not running. Text "startup" to get it running.')
-        elif incoming_twilio.message() == 'startup':
+        elif incoming_twilio.message().lower() == 'startup':
             incoming_twilio.send_sms(incoming_twilio.sender(), 'Starting Minecraft server...')
             if ec2_manager.start_instance():
                 twilio_response.message(f'Minecraft server started at {minecraft_host}. Give it a minute to warm up :-)')
             else:
                 twilio_response.message("Unable to start the server at this time.")
-        elif incoming_twilio.message() == 'shutdown':
+        elif incoming_twilio.message().lower() == 'shutdown':
             incoming_twilio.send_sms(incoming_twilio.sender(), 'Stopping Minecraft server...')
             if ec2_manager.stop_instance():
                 twilio_response.message('Minecraft server shutting down.')
             else:
                 twilio_response.message("Unable to shutdown the server at this time.")
-        elif incoming_twilio.message().startswith('whitelist add '):
+        elif incoming_twilio.message().lower().startswith('whitelist add '):
             if len(incoming_twilio.ip()) > 0:
                 ec2_manager.add_ip_to_whitelist(incoming_twilio.ip(),
                         minecraft_port,
@@ -63,7 +64,7 @@ def lambda_handler(event, context):
                 twilio_response.message(f'Added {incoming_twilio.ip()} to whitelist as "{incoming_twilio.ip_description()}"')
             else:
                 twilio_response.message("usage: whitelist add 123.456.78.9 as person's home")
-        elif incoming_twilio.message().startswith('whitelist remove '):
+        elif incoming_twilio.message().lower().startswith('whitelist remove '):
             if len(incoming_twilio.ip()) > 0:
                 ec2_manager.remove_ip_from_whitelist(incoming_twilio.ip(),
                         minecraft_port,

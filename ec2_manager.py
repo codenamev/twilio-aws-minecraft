@@ -18,11 +18,10 @@ class Ec2Manager:
         try:
             host_name = socket.gethostname()
             host_ip = socket.gethostbyname(host_name)
-            self.logger.debug(f'Hostname: {host_name}')
-            self.logger.debug(f'IP: {host_ip}')
+            self.logger.info(f'Lambda host: Hostname: {host_name}, IP: {host_ip}')
             return host_ip
         except:
-            self.logger.warning("Unable to get Hostname and IP")
+            self.logger.error("Unable to get Hostname and IP")
             return None
 
     def instance_status(self):
@@ -31,30 +30,31 @@ class Ec2Manager:
                     InstanceIds=[self.instance_id],
                     DryRun=False
                     )
-            self.logger.debug(f'EC2 Status: {response}')
+            self.logger.info(f'EC2 Status: {response}')
             return response['InstanceStatuses'][0]['InstanceState']['Name']
         except IndexError as error:
+            self.logger.error(f'[{__name__}#instance_status] Received unexpected response: {error}')
             return 'Unknown'
         except ClientError as error:
-            self.logger.debug(f'[{__name__}#instance_status] EC2 Error: {error}')
+            self.logger.error(f'[{__name__}#instance_status] EC2 Error: {error}')
             return 'Unknown'
 
     def start_instance(self):
         try:
             ec2_resp = self.ec2.start_instances(InstanceIds=[self.instance_id])
-            self.logger.debug(f'EC2 Response: {ec2_resp}')
+            self.logger.info(f'EC2 Response: {ec2_resp}')
             return True
         except ClientError as error:
-            self.logger.debug(f'[{__name__}#start_instance] EC2 Error: {error.response}')
+            self.logger.error(f'[{__name__}#start_instance] EC2 Error: {error.response}')
             return False
 
     def stop_instance(self):
         try:
             ec2_resp = self.ec2.stop_instances(InstanceIds=[self.instance_id])
-            self.logger.debug(f'EC2 Response: {ec2_resp}')
+            self.logger.info(f'EC2 Response: {ec2_resp}')
             return True
         except ClientError as error:
-            self.logger.debug(f'[{__name__}#stop_instance] EC2 Error: {error.response}')
+            self.logger.error(f'[{__name__}#stop_instance] EC2 Error: {error.response}')
             return False
 
     def ingress_permissions_for_ip(self, ip, port, description):
@@ -90,13 +90,13 @@ class Ec2Manager:
                     GroupId=self.security_group_id,
                     IpPermissions=self.ingress_permissions_for_ip(f'{ip}/32', port, description)
             )
-            self.logger.debug(f'EC2 Response: {ec2_resp}')
+            self.logger.info(f'EC2 Response: {ec2_resp}')
             return True
         except ClientError as error:
             if 'already exists' in error.response['Error']['Message']:
                 return True
             else:
-                self.logger.debug(f'[{__name__}#add_ip_to_whitelist] EC2 Error: {error.response}')
+                self.logger.error(f'[{__name__}#add_ip_to_whitelist] EC2 Error: {error.response}')
                 return False
 
     def remove_ip_from_whitelist(self, ip, port=80, description=''):
@@ -106,8 +106,8 @@ class Ec2Manager:
                     GroupId=self.security_group_id,
                     IpPermissions=self.ingress_permissions_for_ip(f'{ip}/32', port, description)
             )
-            self.logger.debug(f'EC2 Response: {ec2_resp}')
+            self.logger.info(f'EC2 Response: {ec2_resp}')
             return True
         except ClientError as error:
-            self.logger.debug(f'[{__name__}#remove_ip_from_whitelist] EC2 Error: {error.response}')
+            self.logger.error(f'[{__name__}#remove_ip_from_whitelist] EC2 Error: {error.response}')
             return False
